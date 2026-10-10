@@ -1,7 +1,6 @@
 # 🦉 StudyBuddy App
 
 A modern, distraction-free study companion featuring an interactive **Pomodoro Clock**, **Flashcard Decks**, and a **Quiz Arena** where you can customize your timers, create your own decks, and take quizzes to test your recall.
-
 ---
 
 ## ✨ Key Features
