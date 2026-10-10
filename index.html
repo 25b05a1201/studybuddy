@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBuddy - Pomodoro, Flashcards & Quizzes</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body data-theme="indigo">
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-avatar" id="mascotIcon" title="Your Study Buddy!">🦉</div>
+        <div>
+          <h1 class="brand-title">StudyBuddy</h1>
+          <p class="brand-subtitle" id="buddySpeech">Ready to study! Let's get focused.</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="stats-badge" title="Pomodoros completed today">
+          <span class="badge-icon">🍅</span>
+          <span class="badge-label">Today: <strong id="todayCount">0</strong></span>
+        </div>
+        <div class="stats-badge streak-badge" title="Daily study streak">
+          <span class="badge-icon">🔥</span>
+          <span class="badge-label"><strong id="streakCount">1</strong> Day</span>
+        </div>
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          🌓
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="App Settings" aria-label="Settings">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-tab="timer" role="tab" aria-selected="true">
+        <span class="tab-icon">⏱️</span>
+        <span class="tab-text">Pomodoro</span>
+      </button>
+      <button class="nav-tab" data-tab="flashcards" role="tab" aria-selected="false">
+        <span class="tab-icon">🗂️</span>
+        <span class="tab-text">Flashcards</span>
+      </button>
+      <button class="nav-tab" data-tab="quiz" role="tab" aria-selected="false">
+        <span class="tab-icon">📝</span>
+        <span class="tab-text">Quiz</span>
+      </button>
+    </nav>
+
+    <!-- MAIN VIEWS -->
+    <main class="main-content">
+      
+      <!-- TAB 1: POMODORO CLOCK -->
+      <section id="timerView" class="tab-view active">
+        <div class="timer-card card">
+          <!-- Session Switcher -->
+          <div class="mode-pill-group">
+            <button class="mode-pill active" data-mode="pomodoro">Focus</button>
+            <button class="mode-pill" data-mode="shortBreak">Short Break</button>
+            <button class="mode-pill" data-mode="longBreak">Long Break</button>
+          </div>
+
+          <!-- Circular Clock Display -->
+          <div class="clock-display-wrap">
+            <svg class="progress-ring" width="280" height="280">
+              <circle class="progress-ring-track" cx="140" cy="140" r="120"></circle>
+              <circle class="progress-ring-bar" id="progressRingBar" cx="140" cy="140" r="120"></circle>
+            </svg>
+            <div class="clock-center">
+              <div class="time-readout" id="timerDisplay">25:00</div>
+              <div class="mode-status-label" id="timerStatusLabel">Focus Session</div>
+              <div class="cycle-dots" id="cycleDots" title="Sessions until long break">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Focus Task Input -->
+          <div class="focus-task-container">
+            <label for="focusTaskInput" class="sr-only">Focus Target</label>
+            <input type="text" id="focusTaskInput" class="focus-task-input" placeholder="What are you focusing on right now? (e.g. Chapter 4 Quiz, Biology notes)">
+          </div>
+
+          <!-- Controls -->
+          <div class="timer-controls">
+            <button id="resetTimerBtn" class="btn btn-secondary icon-only" title="Reset Session">
+              ↺
+            </button>
+            <button id="toggleTimerBtn" class="btn btn-primary btn-large">
+              <span id="playIcon">▶</span>
+              <span id="playText">Start Focus</span>
+            </button>
+            <button id="skipTimerBtn" class="btn btn-secondary icon-only" title="Skip to Next Session">
+              ⏭
+            </button>
+          </div>
+
+          <!-- Quick Minute Adjusters -->
+          <div class="quick-adjust-group">
+            <button class="quick-btn" data-adjust="-5">-5m</button>
+            <button class="quick-btn" data-adjust="-1">-1m</button>
+            <span class="quick-label">Adjust Current Session</span>
+            <button class="quick-btn" data-adjust="1">+1m</button>
+            <button class="quick-btn" data-adjust="5">+5m</button>
+          </div>
+        </div>
+
+        <!-- Timer Motivation & Tips Card -->
+        <div class="card buddy-card">
+          <div class="buddy-header">
+            <div class="buddy-avatar-large">💡</div>
+            <div>
+              <h3>Buddy's Focus Tip</h3>
+              <p id="buddyTipText" class="buddy-tip-text">Study in 25-minute bursts with zero phone notifications. Review flashcards during short breaks to test recall!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: FLASHCARDS -->
+      <section id="flashcardsView" class="tab-view">
+        <div class="flashcards-topbar">
+          <div class="deck-selector-wrap">
+            <label for="deckSelect">Active Deck:</label>
+            <select id="deckSelect" class="form-select"></select>
+            <button id="newDeckBtn" class="btn btn-outline btn-sm">+ New Deck</button>
+            <button id="deleteDeckBtn" class="btn btn-danger-outline btn-sm" title="Delete current deck">🗑️</button>
+          </div>
+
+          <div class="flashcards-actions">
+            <button id="addCardModalBtn" class="btn btn-primary btn-sm">+ Add Card</button>
+            <button id="quizFromDeckBtn" class="btn btn-accent btn-sm">🎯 Quiz This Deck</button>
+          </div>
+        </div>
+
+        <!-- Flashcard Study Area -->
+        <div class="study-card-container">
+          <div class="study-meta">
+            <div class="card-counter" id="cardCounter">Card 1 of 1</div>
+            <div class="deck-mastery-stats">
+              <span class="badge mastered-badge" id="deckMasteredCount">0 Mastered</span>
+              <span class="badge learning-badge" id="deckReviewCount">0 Needs Review</span>
+            </div>
+          </div>
+
+          <!-- 3D Flip Card -->
+          <div class="flip-card-wrapper" id="flipCardWrapper" tabindex="0" role="button" aria-label="Flashcard. Click or hit Space/Enter to flip.">
+            <div class="flip-card-inner" id="flipCardInner">
+              <div class="flip-card-face flip-card-front">
+                <span class="face-tag">Question / Prompt</span>
+                <div class="card-text" id="cardFrontText">Welcome to StudyBuddy Flashcards! Click to flip.</div>
+                <span class="flip-hint">👆 Click or press Space to reveal answer</span>
+              </div>
+              <div class="flip-card-face flip-card-back">
+                <span class="face-tag">Answer / Explanation</span>
+                <div class="card-text" id="cardBackText">This is the back of the card! Use the buttons below to grade yourself.</div>
+                <span class="flip-hint">👆 Click to flip back</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flip Card Navigation & Grading Controls -->
+          <div class="card-controls">
+            <button id="prevCardBtn" class="btn btn-secondary">◀ Prev</button>
+            <button id="markReviewBtn" class="btn btn-warning">⚠️ Needs Review</button>
+            <button id="flipCardBtn" class="btn btn-secondary">🔄 Flip</button>
+            <button id="markMasteredBtn" class="btn btn-success">✅ Mastered</button>
+            <button id="nextCardBtn" class="btn btn-secondary">Next ▶</button>
+          </div>
+
+          <div class="deck-sub-controls">
+            <button id="shuffleDeckBtn" class="btn btn-outline btn-xs">🔀 Shuffle Cards</button>
+            <button id="resetMasteryBtn" class="btn btn-outline btn-xs">↺ Reset Mastery</button>
+            <button id="toggleCardListBtn" class="btn btn-outline btn-xs">📋 View All Cards (<span id="totalCardsCount">0</span>)</button>
+          </div>
+        </div>
+
+        <!-- Cards List Table/Manager (Collapsible) -->
+        <div id="cardsListSection" class="card deck-manager-card hidden">
+          <div class="deck-manager-header">
+            <h3>Manage Cards in Current Deck</h3>
+            <button id="closeCardListBtn" class="icon-btn-sm">✕</button>
+          </div>
+          <div class="cards-table-wrapper">
+            <table class="cards-table">
+              <thead>
+                <tr>
+                  <th style="width: 40%">Question / Front</th>
+                  <th style="width: 40%">Answer / Back</th>
+                  <th style="width: 10%">Status</th>
+                  <th style="width: 10%">Action</th>
+                </tr>
+              </thead>
+              <tbody id="cardsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: QUIZ -->
+      <section id="quizView" class="tab-view">
+        <!-- QUIZ HOME SCREEN -->
+        <div id="quizHomePanel" class="quiz-panel card">
+          <div class="quiz-hero">
+            <div class="quiz-hero-icon">🏆</div>
+            <h2>Knowledge Check & Quiz Arena</h2>
+            <p>Challenge yourself with quizzes created from your flashcard decks or custom quizzes you set up!</p>
+          </div>
+
+          <div class="quiz-options-grid">
+            <!-- Option 1: Instant Deck Quiz -->
+            <div class="quiz-option-card">
+              <div class="option-icon">⚡</div>
+              <h3>Quiz from Flashcards</h3>
+              <p>Practice recall with automated multiple-choice & prompt questions generated from any deck.</p>
+              
+              <div class="form-group">
+                <label for="quizDeckSelect">Select Deck:</label>
+                <select id="quizDeckSelect" class="form-select"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="quizCountSelect">Questions:</label>
+                <select id="quizCountSelect" class="form-select">
+                  <option value="5">5 Questions</option>
+                  <option value="10" selected>10 Questions</option>
+                  <option value="all">All Cards</option>
+                </select>
+              </div>
+
+              <button id="startDeckQuizBtn" class="btn btn-primary btn-block">🚀 Start Deck Quiz</button>
+            </div>
+
+            <!-- Option 2: Custom Quiz Creator -->
+            <div class="quiz-option-card">
+              <div class="option-icon">✍️</div>
+              <h3>Custom Quiz Maker</h3>
+              <p>Create your own targeted multiple-choice exam questions with custom options and explanations.</p>
+              
+              <div class="form-group">
+                <label for="customQuizSelect">Your Custom Quizzes:</label>
+                <select id="customQuizSelect" class="form-select"></select>
+              </div>
+
+              <div class="custom-quiz-btns">
+                <button id="startCustomQuizBtn" class="btn btn-primary btn-block">🎯 Take Custom Quiz</button>
+                <div class="button-row">
+                  <button id="createCustomQuizBtn" class="btn btn-outline btn-sm">+ New Quiz</button>
+                  <button id="addCustomQuestionBtn" class="btn btn-outline btn-sm">+ Add Question</button>
+                  <button id="deleteCustomQuizBtn" class="btn btn-danger-outline btn-sm">🗑️</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVE QUIZ RUNNER SCREEN -->
+        <div id="quizRunnerPanel" class="quiz-panel card hidden">
+          <div class="quiz-runner-header">
+            <div class="quiz-runner-info">
+              <span class="quiz-title-badge" id="activeQuizTitle">Flashcard Practice</span>
+              <div class="quiz-progress-label" id="quizProgressLabel">Question 1 of 5</div>
+            </div>
+            <div class="quiz-timer-badge" id="quizTimerBadge">⏱️ <span id="quizTimerReadout">00:00</span></div>
+            <button id="quitQuizBtn" class="btn btn-outline btn-xs">Quit Quiz</button>
+          </div>
+
+          <div class="quiz-progress-bar-container">
+            <div class="quiz-progress-bar-fill" id="quizProgressBar"></div>
+          </div>
+
+          <!-- Question Body -->
+          <div class="quiz-question-card">
+            <h3 class="quiz-question-title" id="quizQuestionText">Question goes here?</h3>
+            
+            <div class="quiz-options-list" id="quizOptionsContainer">
+              <!-- Dynamically populated answer choices -->
+            </div>
+
+            <div id="quizExplanationBox" class="quiz-explanation hidden">
+              <!-- Explanation shown after selection -->
+            </div>
+          </div>
+
+          <div class="quiz-runner-footer">
+            <div id="feedbackText" class="quiz-feedback-text"></div>
+            <button id="nextQuestionBtn" class="btn btn-primary btn-large hidden">Next Question ▶</button>
+          </div>
+        </div>
+
+        <!-- QUIZ SCORE SUMMARY SCREEN -->
+        <div id="quizResultPanel" class="quiz-panel card hidden">
+          <div class="result-header">
+            <div class="result-trophy" id="resultTrophy">🎉</div>
+            <h2 id="resultHeading">Quiz Completed!</h2>
+            <p id="resultSubheading">Great effort on testing your memory.</p>
+          </div>
+
+          <div class="score-circle-container">
+            <div class="score-display">
+              <span class="score-percent" id="scorePercent">80%</span>
+              <span class="score-fraction" id="scoreFraction">4 / 5 Correct</span>
+            </div>
+          </div>
+
+          <div class="result-breakdown" id="resultBreakdown">
+            <!-- List of review items (question, your answer, correct answer) -->
+          </div>
+
+          <div class="result-actions">
+            <button id="retakeQuizBtn" class="btn btn-primary">↺ Retake Quiz</button>
+            <button id="backToQuizHubBtn" class="btn btn-secondary">🏠 Back to Quizzes</button>
+            <button id="studyDeckFromQuizBtn" class="btn btn-accent">🗂️ Study Deck</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>StudyBuddy • Pomodoro Focus, Active Recall & Knowledge Quizzes • All data stored locally</p>
+    </footer>
+  </div>
+
+  <!-- MODAL: ADD / EDIT FLASHCARD -->
+  <dialog id="cardModal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="cardModalTitle">Add New Flashcard</h3>
+        <button class="modal-close-btn" id="closeCardModalBtn">✕</button>
+      </div>
+      <form id="cardForm">
+        <div class="form-group">
+          <label for="cardFrontInput">Front (Question, Term, or Prompt) *</label>
+          <textarea id="cardFrontInput" rows="3" class="form-control" placeholder="e.g. What is the powerhouse of the cell?" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cardBackInput">Back (Answer or Explanation) *</label>
+          <textarea id="cardBackInput" rows="3" class="form-control" placeholder="e.g. Mitochondria. It produces ATP through cellular respiration." required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelCardModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveCardBtn">Save Card</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: NEW DECK -->
+  <dialog id="newDeckModal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Deck</h3>
+        <button class="modal-close-btn" id="closeDeckModalBtn">✕</button>
+      </div>
+      <form id="newDeckForm">
+        <div class="form-group">
+          <label for="newDeckNameInput">Deck Name *</label>
+          <input type="text" id="newDeckNameInput" class="form-control" placeholder="e.g. Chemistry 101, Spanish Vocab" required>
+        </div>
+        <div class="form-group">
+          <label for="newDeckDescInput">Description (Optional)</label>
+          <input type="text" id="newDeckDescInput" class="form-control" placeholder="e.g. Midterm exam revision">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelDeckModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Deck</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: NEW CUSTOM QUIZ -->
+  <dialog id="customQuizModal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create Custom Quiz</h3>
+        <button class="modal-close-btn" id="closeCustomQuizModalBtn">✕</button>
+      </div>
+      <form id="customQuizForm">
+        <div class="form-group">
+          <label for="customQuizTitleInput">Quiz Title *</label>
+          <input type="text" id="customQuizTitleInput" class="form-control" placeholder="e.g. Physics Formula Quiz" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelCustomQuizModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Quiz</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: ADD CUSTOM QUIZ QUESTION -->
+  <dialog id="quizQuestionModal" class="modal-dialog modal-dialog-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Question to Custom Quiz</h3>
+        <button class="modal-close-btn" id="closeQuizQuestionModalBtn">✕</button>
+      </div>
+      <form id="quizQuestionForm">
+        <div class="form-group">
+          <label for="questionTextInput">Question Prompt *</label>
+          <textarea id="questionTextInput" rows="2" class="form-control" placeholder="e.g. What is Newton's Second Law of Motion?" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Options (Select the radio for the correct answer) *</label>
+          <div class="option-input-row">
+            <input type="radio" name="correctOption" value="0" checked id="radio0">
+            <input type="text" id="option0Input" class="form-control" placeholder="Option A (Correct)" required>
+          </div>
+          <div class="option-input-row">
+            <input type="radio" name="correctOption" value="1" id="radio1">
+            <input type="text" id="option1Input" class="form-control" placeholder="Option B" required>
+          </div>
+          <div class="option-input-row">
+            <input type="radio" name="correctOption" value="2" id="radio2">
+            <input type="text" id="option2Input" class="form-control" placeholder="Option C" required>
+          </div>
+          <div class="option-input-row">
+            <input type="radio" name="correctOption" value="3" id="radio3">
+            <input type="text" id="option3Input" class="form-control" placeholder="Option D" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="explanationInput">Explanation (Optional)</label>
+          <input type="text" id="explanationInput" class="form-control" placeholder="e.g. Force = Mass x Acceleration (F = ma)">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelQuizQuestionModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Question</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: SETTINGS -->
+  <dialog id="settingsModal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>StudyBuddy Settings</h3>
+        <button class="modal-close-btn" id="closeSettingsModalBtn">✕</button>
+      </div>
+      
+      <div class="settings-body">
+        <h4>⏱️ Pomodoro Durations (Minutes)</h4>
+        <div class="settings-grid">
+          <div class="form-group">
+            <label for="settingFocusTime">Focus Time</label>
+            <input type="number" id="settingFocusTime" class="form-control" min="1" max="120" value="25">
+          </div>
+          <div class="form-group">
+            <label for="settingShortBreak">Short Break</label>
+            <input type="number" id="settingShortBreak" class="form-control" min="1" max="60" value="5">
+          </div>
+          <div class="form-group">
+            <label for="settingLongBreak">Long Break</label>
+            <input type="number" id="settingLongBreak" class="form-control" min="1" max="90" value="15">
+          </div>
+          <div class="form-group">
+            <label for="settingCycleCount">Long Break Interval</label>
+            <input type="number" id="settingCycleCount" class="form-control" min="2" max="10" value="4">
+          </div>
+        </div>
+
+        <h4>🔊 Audio & Notifications</h4>
+        <div class="form-check-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="settingSoundToggle" checked>
+            <span>Play chime on session finish</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="settingAutoStartBreak">
+            <span>Auto-start breaks</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="settingAutoStartPomodoro">
+            <span>Auto-start next focus session</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="settingChimeStyle">Chime Sound Style:</label>
+          <select id="settingChimeStyle" class="form-select">
+            <option value="bell">Zen Bell / Gong</option>
+            <option value="digital">Modern Digital Chime</option>
+            <option value="harp">Soft Harp Chord</option>
+          </select>
+          <button type="button" id="testSoundBtn" class="btn btn-outline btn-xs" style="margin-top:6px;">🔔 Test Sound</button>
+        </div>
+
+        <h4>🎨 Theme Color Palette</h4>
+        <div class="theme-picker-group">
+          <button class="theme-pick-btn active" data-color-theme="indigo" style="background: #4f46e5;" title="Indigo Focus"></button>
+          <button class="theme-pick-btn" data-color-theme="sunset" style="background: #ea580c;" title="Sunset Warmth"></button>
+          <button class="theme-pick-btn" data-color-theme="emerald" style="background: #059669;" title="Emerald Grove"></button>
+          <button class="theme-pick-btn" data-color-theme="rose" style="background: #e11d48;" title="Rose Berry"></button>
+          <button class="theme-pick-btn" data-color-theme="slate" style="background: #475569;" title="Slate Minimal"></button>
+        </div>
+
+        <h4>💾 Data Management</h4>
+        <div class="data-actions-row">
+          <button id="exportDataBtn" class="btn btn-outline btn-sm">📥 Export Backup (JSON)</button>
+          <label class="btn btn-outline btn-sm file-upload-label">
+            📤 Import Backup
+            <input type="file" id="importDataInput" accept=".json" style="display:none;">
+          </label>
+          <button id="loadSampleDecksBtn" class="btn btn-outline btn-sm">📚 Load Starter Decks</button>
+          <button id="resetAllDataBtn" class="btn btn-danger-outline btn-sm">⚠️ Reset to Defaults</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save & Apply</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

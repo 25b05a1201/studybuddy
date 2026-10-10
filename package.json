@@ -1,0 +1,19 @@
+{
+  "name": "studybuddy-app",
+  "version": "1.0.0",
+  "description": "Simple, modern Study Buddy web app with Pomodoro Clock, Flashcards, and Quiz Arena",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "open": "start index.html"
+  },
+  "keywords": [
+    "pomodoro",
+    "flashcards",
+    "quiz",
+    "study-buddy",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT"
+}
